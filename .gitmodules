@@ -1,0 +1,8 @@
+[submodule "libs/LlamaFactory"]
+	path = libs/LlamaFactory
+	url = https://github.com/shunchizhang/LlamaFactory.git
+	branch = MindZero
+[submodule "libs/EasyR1"]
+	path = libs/EasyR1
+	url = https://github.com/shunchizhang/EasyR1.git
+	branch = MindZero
