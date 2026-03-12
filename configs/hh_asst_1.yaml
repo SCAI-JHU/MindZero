@@ -1,0 +1,107 @@
+data:
+  train_files: "--"
+  val_files: "--"
+  prompt_key: problem
+  answer_key: answer
+  image_key: images
+  video_key: videos
+  image_dir: null
+  video_fps: 2.0
+  max_prompt_length: -1
+  max_response_length: -1
+  rollout_batch_size: 32
+  mini_rollout_batch_size: null
+  val_batch_size: 20
+  format_prompt: "--"
+  override_chat_template: null
+  shuffle: true
+  seed: 1
+  min_pixels: null
+  max_pixels: null
+  filter_overlong_prompts: true
+
+algorithm:
+  adv_estimator: grpo
+  disable_kl: false
+  use_kl_loss: true
+  kl_penalty: low_var_kl
+  kl_coef: 1.0e-2
+  online_filtering: false  # dapo filter groups
+  filter_key: overall
+  filter_low: 0.01
+  filter_high: 0.99
+
+worker:
+  actor:
+    global_batch_size: 32
+    micro_batch_size_per_device_for_update: 8
+    micro_batch_size_per_device_for_experience: 8
+    max_grad_norm: 1.0
+    padding_free: true
+    dynamic_batching: true
+    ulysses_size: 1
+    model:
+      model_path: "--"
+      enable_gradient_checkpointing: true
+      trust_remote_code: false
+      freeze_vision_tower: false
+    optim:
+      lr: 1.0e-6
+      weight_decay: 1.0e-2
+      strategy: adamw_bf16
+      lr_warmup_ratio: 0.0
+    fsdp:
+      torch_dtype: bf16
+      enable_full_shard: true
+      enable_cpu_offload: false
+      enable_rank0_init: true
+    offload:
+      offload_params: false
+      offload_optimizer: false
+
+  rollout:
+    n: 16
+    temperature: 1.0
+    top_p: 1.0
+    limit_images: 0
+    gpu_memory_utilization: 0.7
+    enforce_eager: false
+    enable_chunked_prefill: true
+    tensor_parallel_size: 1
+    disable_tqdm: false
+    max_num_batched_tokens: -1
+    val_override_config:
+      temperature: 0.8
+      top_p: 0.95
+      n: 1
+
+  ref:
+    fsdp:
+      enable_full_shard: true
+      enable_cpu_offload: false
+      enable_rank0_init: true
+    offload:
+      offload_params: false
+
+  reward:
+    reward_function: "--"
+
+trainer:
+  total_epochs: -1
+  max_steps: null
+  project_name: "--"
+  experiment_name: "--"
+  logger: ["console", "file", "wandb"]
+  nnodes: 1
+  n_gpus_per_node: -1
+  max_try_make_batch: 20
+  val_freq: -1
+  val_before_train: true
+  val_only: false
+  val_generations_to_log: 3
+  save_freq: -1
+  save_limit: -1
+  save_model_only: false
+  save_checkpoint_path: null
+  load_checkpoint_path: null
+  find_last_checkpoint: true

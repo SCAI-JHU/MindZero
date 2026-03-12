@@ -1,0 +1,6 @@
+State: {{ s }}
+
+Here is a statement of {{ main_agent }}'s current observation. Only evaluate {{ main_agent }}'s observation based on the state. Do not imagine anything else. Think about {{ main_agent }}'s location. {{ main_agent }} is quite likely to observe all objects and events in {{ main_agent }}'s location, and is unlikely to observe states in another location. If {{ main_agent }} does not appear in the state, {{ main_agent }} can not observe anything. Note that the statement has to be precise in wording to be likely.
+{% if type %}
+Please note: {{ type }}.
+{% endif %}
