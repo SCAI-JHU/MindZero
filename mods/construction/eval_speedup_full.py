@@ -49,14 +49,17 @@ def _simulate_episode(
     api_base=None,
     api_key=None,
     max_tokens=None,
+    num_particles=None,
     timeout=None,
     prompt_mode=None,
     openai_api_base=None,
     openai_api_key=None,
+    openai_reasoning_enabled=False,
     gemini_api_base=None,
     gemini_api_key=None,
     gemini_model_name=None,
     gemini_reasoning_enabled=False,
+    gemini_provider="openrouter",
 ):
     env = _build_env(env_config, seed)
     env.set_state(initial_state)
@@ -132,9 +135,11 @@ def _simulate_episode(
                     api_base,
                     api_key,
                     max_tokens,
+                    num_particles,
                     timeout,
                     prompt_mode,
                     use_responses=(mode == "openai"),
+                    reasoning_enabled=openai_reasoning_enabled,
                 )
                 helper_agent.goal_distribution = distribution
                 responses.append(response)
@@ -169,15 +174,31 @@ def _simulate_episode(
                     gemini_api_base,
                     gemini_api_key,
                     max_tokens,
+                    num_particles,
                     timeout,
                     prompt_mode,
                     gemini_reasoning_enabled,
+                    gemini_provider,
                 )
                 helper_agent.goal_distribution = distribution
                 responses.append(response)
-                prompt_tokens.append(int(usage.get("promptTokenCount") or 0))
-                completion_tokens.append(int(usage.get("candidatesTokenCount") or 0))
-                total_tokens.append(int(usage.get("totalTokenCount") or 0))
+                prompt_tokens.append(
+                    int(
+                        usage.get("promptTokenCount")
+                        or usage.get("prompt_tokens")
+                        or 0
+                    )
+                )
+                completion_tokens.append(
+                    int(
+                        usage.get("candidatesTokenCount")
+                        or usage.get("completion_tokens")
+                        or 0
+                    )
+                )
+                total_tokens.append(
+                    int(usage.get("totalTokenCount") or usage.get("total_tokens") or 0)
+                )
             if distribution is None:
                 print(response)
 
@@ -383,9 +404,11 @@ def _vlm_goal_distribution(
     api_base,
     api_key,
     max_tokens,
+    num_particles,
     timeout,
     prompt_mode,
     use_responses=False,
+    reasoning_enabled=False,
 ):
     if use_responses:
         url = f"{api_base.rstrip('/')}/responses"
@@ -401,9 +424,12 @@ def _vlm_goal_distribution(
         payload = {
             "model": model_name,
             "input": input_payload,
-            "temperature": 0.0,
-            "max_output_tokens": max_tokens,
         }
+        # Keep Responses payload conservative for compatibility across models.
+        if max_tokens is not None:
+            payload["max_output_tokens"] = max_tokens
+        if reasoning_enabled:
+            payload["reasoning"] = {"effort": "medium"}
     else:
         messages = _build_messages(row["images"], prompt_text)
         payload = {
@@ -413,7 +439,15 @@ def _vlm_goal_distribution(
             "max_tokens": max_tokens,
         }
     resp = requests.post(url, headers=headers, json=payload, timeout=timeout)
-    resp.raise_for_status()
+    if not resp.ok:
+        error_text = (resp.text or "").strip()
+        if len(error_text) > 1200:
+            error_text = error_text[:1200] + "...(truncated)"
+        raise requests.HTTPError(
+            f"OpenAI request failed: status={resp.status_code}, url={url}, "
+            f"response={error_text}",
+            response=resp,
+        )
     data = resp.json()
     usage = data.get("usage") or {}
     if use_responses:
@@ -429,7 +463,7 @@ def _vlm_goal_distribution(
                     break
     else:
         response = data["choices"][0]["message"]["content"]
-    dist = _parse_distribution2(response, env_config)
+    dist = _parse_distribution2(response, env_config, num_particles=num_particles)
     if not dist:
         return None, response, usage
 
@@ -452,30 +486,66 @@ def _gemini_goal_distribution(
     api_base,
     api_key,
     max_tokens,
+    num_particles,
     timeout,
     prompt_mode,
     reasoning_enabled,
+    provider,
 ):
-    url = f"{api_base.rstrip('/')}/chat/completions"
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {api_key}",
-    }
     prompt_text = _build_prompt(row["problem"], prompt_mode)
-    messages = _build_messages(row["images"], prompt_text)
-    payload = {
-        "model": model_name,
-        "messages": messages,
-        "temperature": 0.0,
-        "max_tokens": max_tokens,
-        "extra_body": {"reasoning": {"enabled": bool(reasoning_enabled)}},
-    }
-    resp = requests.post(url, headers=headers, json=payload, timeout=timeout)
+    provider = (provider or "openrouter").lower()
+    if provider == "google":
+        url = f"{api_base.rstrip('/')}/models/{model_name}:generateContent"
+        headers = {"Content-Type": "application/json"}
+        payload = {
+            "contents": _build_gemini_contents(row["images"], prompt_text),
+            "generationConfig": {
+                "temperature": 0.0,
+                "maxOutputTokens": max_tokens,
+                "thinkingConfig": {"thinkingBudget": 0},
+            },
+        }
+        resp = requests.post(
+            url,
+            headers=headers,
+            params={"key": api_key},
+            json=payload,
+            timeout=timeout,
+        )
+    elif provider == "openrouter":
+        url = f"{api_base.rstrip('/')}/chat/completions"
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}",
+        }
+        messages = _build_messages(row["images"], prompt_text)
+        payload = {
+            "model": model_name,
+            "messages": messages,
+            "temperature": 0.0,
+            "max_tokens": max_tokens,
+        }
+        if reasoning_enabled:
+            payload["extra_body"] = {"reasoning": {"enabled": True}}
+        resp = requests.post(url, headers=headers, json=payload, timeout=timeout)
+    else:
+        raise ValueError(f"Invalid gemini provider: {provider}")
     resp.raise_for_status()
     data = resp.json()
-    response = data["choices"][0]["message"]["content"]
-    usage = data.get("usage") or {}
-    dist = _parse_distribution2(response, env_config)
+    if provider == "google":
+        parts = (
+            data.get("candidates", [{}])[0]
+            .get("content", {})
+            .get("parts", [])
+        )
+        response = "\n".join(
+            part.get("text", "") for part in parts if isinstance(part, dict)
+        ).strip()
+        usage = data.get("usageMetadata") or {}
+    else:
+        response = data["choices"][0]["message"]["content"]
+        usage = data.get("usage") or {}
+    dist = _parse_distribution2(response, env_config, num_particles=num_particles)
     if not dist:
         return None, response, usage
 
@@ -506,6 +576,16 @@ def _write_csv_rows(csv_path, rows, fieldnames):
         writer.writeheader()
         for row in rows:
             writer.writerow(row)
+
+
+def _load_results_rows(results_path):
+    if not os.path.exists(results_path):
+        return []
+    with open(results_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    if not isinstance(data, list):
+        return []
+    return data
 
 
 def _compute_speedup_from_csv(csv_path):
@@ -549,9 +629,21 @@ def main():
         "--openai_api_key", default=os.environ.get("OPENAI_API_KEY", "")
     )
     parser.add_argument(
-        "--gemini_api_base", default="https://openrouter.ai/api/v1"
+        "--openai_reasoning",
+        action="store_true",
+        help="Enable OpenAI reasoning (default: off / low effort).",
     )
-    parser.add_argument("--gemini_api_key", default="[[HIDDEN]]")
+    parser.add_argument(
+        "--gemini_provider",
+        choices=["openrouter", "google"],
+        default="openrouter",
+    )
+    parser.add_argument(
+        "--gemini_api_base", default=""
+    )
+    parser.add_argument(
+        "--gemini_api_key", default=os.environ.get("GEMINI_API_KEY", "")
+    )
     parser.add_argument(
         "--gemini_reasoning",
         action="store_true",
@@ -559,9 +651,15 @@ def main():
     )
     # model_name is shared across vlm/openai/gemini
     parser.add_argument("--max_tokens", type=int, default=512)
+    parser.add_argument(
+        "--num_particles",
+        type=int,
+        default=8,
+        help="Number of goal particles used by _parse_distribution2",
+    )
     parser.add_argument("--timeout", type=int, default=120)
     parser.add_argument(
-        "--output_dir", default="/home/ubuntu/icml/yichao/EasyR1/lambda_pack/data/gw_0125_hiyouga/asst/asst_eval"
+        "--output_dir", default="/weka/scratch/tshu2/szhan256/yichao/github/hiyouga/EasyR1/checkpoints/asst_eval"
     )
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--compute_speedup", action="store_true")
@@ -576,10 +674,18 @@ def main():
         if args.model == "openai":
             default_name = "gpt-5.2"
         elif args.model == "gemini":
-            default_name = "google/gemini-3-flash-preview"
+            if args.gemini_provider == "google":
+                default_name = "gemini-3-flash-preview"
+            else:
+                default_name = "google/gemini-3-flash-preview"
         else:
             default_name = None
         args.model_name = default_name
+    if args.model == "gemini" and not args.gemini_api_base:
+        if args.gemini_provider == "google":
+            args.gemini_api_base = "https://generativelanguage.googleapis.com/v1beta"
+        else:
+            args.gemini_api_base = "https://openrouter.ai/api/v1"
     if args.model == "vlm" and not args.model_name:
         raise ValueError("model_name is required when --model=vlm")
     if args.model == "openai" and not args.openai_api_key:
@@ -588,7 +694,7 @@ def main():
         raise ValueError("gemini_api_key is required when --model=gemini")
 
     dataset = Dataset.from_parquet(args.parquet_path)
-    episodes = [row for row in dataset]
+    episodes = list(dataset)
 
     if args.model in ("vlm", "openai", "gemini"):
         model_dir = os.path.join(args.output_dir, args.model_name)
@@ -598,9 +704,31 @@ def main():
     os.makedirs(gifs_dir, exist_ok=True)
 
     results_path = os.path.join(model_dir, "results.json")
-    results = []
-    progress = tqdm(enumerate(episodes), total=len(episodes), desc="Evaluating")
-    for row_idx, row in progress:
+    existing_results = _load_results_rows(results_path)
+    results_by_episode = {}
+    for item in existing_results:
+        if not isinstance(item, dict):
+            continue
+        episode_id = item.get("episode_id")
+        try:
+            episode_id = int(episode_id)
+        except (TypeError, ValueError):
+            continue
+        if 0 <= episode_id < len(episodes):
+            results_by_episode[episode_id] = item
+
+    pending_indices = [i for i in range(len(episodes)) if i not in results_by_episode]
+    if not pending_indices:
+        print(f"Resume detected: all {len(episodes)} episodes already completed.")
+    else:
+        print(
+            f"Resume detected: {len(results_by_episode)} completed, "
+            f"{len(pending_indices)} remaining."
+        )
+
+    progress = tqdm(pending_indices, total=len(pending_indices), desc="Evaluating")
+    for row_idx in progress:
+        row = episodes[row_idx]
         env_config = _parse_json(row["env_config"])
         initial_state = _parse_json(row["initial_state"])
 
@@ -624,14 +752,17 @@ def main():
             api_base=args.api_base,
             api_key=args.api_key,
             max_tokens=args.max_tokens,
+            num_particles=args.num_particles,
             timeout=args.timeout,
             prompt_mode=args.prompt_mode,
             openai_api_base=args.openai_api_base,
             openai_api_key=args.openai_api_key,
+            openai_reasoning_enabled=args.openai_reasoning,
             gemini_api_base=args.gemini_api_base,
             gemini_api_key=args.gemini_api_key,
             gemini_model_name=args.model_name,
             gemini_reasoning_enabled=args.gemini_reasoning,
+            gemini_provider=args.gemini_provider,
         )
         elapsed_seconds = time.time() - start_time
         progress.set_postfix(steps=model_steps)
@@ -656,24 +787,27 @@ def main():
         )
         print(f"Saved {output_path} ({len(frames_model)} frames)")
 
-        results.append(
-            {
-                "episode_id": int(row_idx),
-                "env_config": row["env_config"],
-                "initial_state": row["initial_state"],
-                "actions": model_actions,
-                "responses": responses,
-                "prompt_tokens": prompt_tokens,
-                "completion_tokens": completion_tokens,
-                "total_tokens": total_tokens,
-                "elapsed_seconds": float(elapsed_seconds),
-                "max_goal_matches_gt": max_goal_matches,
-                "steps": int(model_steps),
-                "done": bool(model_done),
-            }
-        )
+        results_by_episode[row_idx] = {
+            "episode_id": int(row_idx),
+            "env_config": row["env_config"],
+            "initial_state": row["initial_state"],
+            "actions": model_actions,
+            "responses": responses,
+            "prompt_tokens": prompt_tokens,
+            "completion_tokens": completion_tokens,
+            "total_tokens": total_tokens,
+            "elapsed_seconds": float(elapsed_seconds),
+            "max_goal_matches_gt": max_goal_matches,
+            "steps": int(model_steps),
+            "done": bool(model_done),
+        }
+        merged_results = [
+            results_by_episode[i] for i in sorted(results_by_episode.keys())
+        ]
         with open(results_path, "w", encoding="utf-8") as f:
-            json.dump(results, f, ensure_ascii=True, indent=2)
+            json.dump(merged_results, f, ensure_ascii=True, indent=2)
+
+    merged_results = [results_by_episode[i] for i in sorted(results_by_episode.keys())]
 
     existing_rows = _load_csv_rows(csv_path)
     if existing_rows and len(existing_rows) != len(episodes):
@@ -696,10 +830,13 @@ def main():
             fieldnames = ["episode_id", args.model]
 
     for i, row in enumerate(rows):
+        result = results_by_episode.get(i)
+        if result is None:
+            continue
         if args.model in ("vlm", "openai", "gemini"):
-            row[args.model_name] = str(results[i]["steps"])
+            row[args.model_name] = str(result["steps"])
         else:
-            row[args.model] = str(results[i]["steps"])
+            row[args.model] = str(result["steps"])
 
     _write_csv_rows(csv_path, rows, fieldnames)
 

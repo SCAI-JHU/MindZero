@@ -2,6 +2,7 @@ import argparse
 import json
 import math
 import re
+from typing import ClassVar, Optional
 
 from datasets import Dataset
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -9,6 +10,9 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 from .agent import HumanAgent
 from .env import PICK, PUT, ConstructionEnv
 from .utils import boltzmann_policy
+
+
+DEFAULT_NUM_GOAL_PARTICLES: int = 8
 
 
 class Object(BaseModel):
@@ -73,6 +77,8 @@ class GoalParticle(BaseModel):
 class GoalParticles(BaseModel):
     particles: list[GoalParticle]
 
+    expected_num_particles: ClassVar[Optional[int]] = None
+
     @model_validator(mode="before")
     def _normalize_list(cls, values):
         if not isinstance(values, dict):
@@ -86,8 +92,11 @@ class GoalParticles(BaseModel):
 
     @field_validator("particles")
     def _ensure_len(cls, value):
-        if len(value) != 8:
-            raise ValueError("Expected exactly 8 goal particles.")
+        expected = cls.expected_num_particles
+        if expected is not None and len(value) != expected:
+            raise ValueError(
+                f"Expected exactly {expected} goal particles, got {len(value)}."
+            )
         seen = set()
         for particle in value:
             labels = sorted([particle.object1.label(), particle.object2.label()])
@@ -107,16 +116,25 @@ class GoalParticles(BaseModel):
             particle.p /= partition
 
     @classmethod
-    def from_json_with_env(cls, data, env_config):
+    def from_json_with_env(
+        cls, data, env_config, num_particles: Optional[int] = DEFAULT_NUM_GOAL_PARTICLES
+    ):
         object_labels = set(_object_labels_from_config(env_config))
         Object._valid_labels = object_labels
-        dist = cls.model_validate(data)
-        dist.normalize()
-        Object._valid_labels = None
-        return dist
+        prev_expected = cls.expected_num_particles
+        try:
+            cls.expected_num_particles = num_particles
+            dist = cls.model_validate(data)
+            dist.normalize()
+            return dist
+        finally:
+            Object._valid_labels = None
+            cls.expected_num_particles = prev_expected
 
     @classmethod
-    def from_json_with_env_lenient(cls, data, env_config):
+    def from_json_with_env_lenient(
+        cls, data, env_config, num_particles: Optional[int] = DEFAULT_NUM_GOAL_PARTICLES
+    ):
         object_labels = set(_object_labels_from_config(env_config))
         label_map = {}
         for label in object_labels:
@@ -171,6 +189,11 @@ class GoalParticles(BaseModel):
 
         Object._valid_labels = object_labels
         particles = [GoalParticle.model_validate(item) for item in items]
+        if num_particles is not None and len(particles) != num_particles:
+            Object._valid_labels = None
+            raise ValueError(
+                f"Expected exactly {num_particles} goal particles, got {len(particles)}."
+            )
         dist = cls.model_construct(particles=particles)
         dist.normalize()
         Object._valid_labels = None
@@ -284,7 +307,11 @@ def _extract_json(text):
     return None
 
 
-def _parse_distribution(response, env_config):
+def _parse_distribution(
+    response,
+    env_config,
+    num_particles: Optional[int] = DEFAULT_NUM_GOAL_PARTICLES,
+):
     try:
         data = json.loads(response)
     except Exception:
@@ -296,12 +323,18 @@ def _parse_distribution(response, env_config):
         except Exception:
             return None
     try:
-        return GoalParticles.from_json_with_env(data, env_config)
+        return GoalParticles.from_json_with_env(
+            data, env_config, num_particles=num_particles
+        )
     except Exception:
         return None
 
 
-def _parse_distribution2(response, env_config):
+def _parse_distribution2(
+    response,
+    env_config,
+    num_particles: Optional[int] = DEFAULT_NUM_GOAL_PARTICLES,
+):
     try:
         data = json.loads(response)
     except Exception:
@@ -313,7 +346,9 @@ def _parse_distribution2(response, env_config):
         except Exception:
             return None
     try:
-        return GoalParticles.from_json_with_env_lenient(data, env_config)
+        return GoalParticles.from_json_with_env_lenient(
+            data, env_config, num_particles=num_particles
+        )
     except Exception:
         return None
 
@@ -327,6 +362,7 @@ def compute_score(
     action_cost=0.1,
     min_prob=1e-12,
     distance=False,
+    num_particles: Optional[int] = DEFAULT_NUM_GOAL_PARTICLES,
 ):
     def safe_log(value):
         return math.log(max(value, min_prob))
@@ -337,7 +373,11 @@ def compute_score(
         if isinstance(env_config, str):
             env_config = json.loads(env_config)
         response = reward_input["response"]
-        dist = _parse_distribution(response, env_config)
+        dist = _parse_distribution(
+            response,
+            env_config,
+            num_particles=num_particles,
+        )
         initial_state = reward_input["initial_state"]
         if isinstance(initial_state, str):
             initial_state = json.loads(initial_state)
@@ -422,7 +462,6 @@ def compute_score(
             #         "all_log_probs": log_probs,
             #     }
             # )
-        
         if distance and bad_distance:
             scores.append(
                 {
@@ -489,6 +528,12 @@ def main():
     parser.add_argument("--gamma", type=float, default=0.95)
     parser.add_argument("--action_cost", type=float, default=0.1)
     parser.add_argument("--min_prob", type=float, default=1e-12)
+    parser.add_argument(
+        "--num_particles",
+        type=int,
+        default=DEFAULT_NUM_GOAL_PARTICLES,
+        help="Expected number of goal particles in the predicted distribution.",
+    )
     args = parser.parse_args()
 
     response = args.response
@@ -511,6 +556,7 @@ def main():
         gamma=args.gamma,
         action_cost=args.action_cost,
         min_prob=args.min_prob,
+        num_particles=args.num_particles,
     )[0]
     print(json.dumps(score, ensure_ascii=True))
 
