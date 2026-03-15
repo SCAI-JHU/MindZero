@@ -7,9 +7,9 @@ from functools import partial
 from datasets import Dataset
 from PIL import Image
 
-from .env import ConstructionEnv
-from .estimate_distribution import GoalParticles
-from inference import ExactInference
+from ..env import ConstructionEnv
+from ..estimate_distribution import GoalParticles
+from ..inference import ExactInference
 
 
 def export_dataset_from_records(

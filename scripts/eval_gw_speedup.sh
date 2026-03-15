@@ -20,7 +20,7 @@ for SEED in "${SEEDS[@]}"
 do
     echo "[Run] Executing with --seed $SEED ..."
 
-    python -m mod.construction.eval_speedup_full \
+    python -m mod.construction.eval.eval_gw_asst \
         --model "$MODEL" \
         --model_name "$MODEL_NAME" \
         --seed "$SEED" \
@@ -32,7 +32,7 @@ done
 
 echo "All tasks completed!"
 
-python -m mod.construction.eval_speedup_full \
+python -m mod.construction.eval.eval_gw_asst \
   --model vlm \
   --model_name 8b \
   --seed 10 \
@@ -40,7 +40,7 @@ python -m mod.construction.eval_speedup_full \
   --parquet_path /weka/scratch/tshu2/szhan256/github/ShunchiZhang/StructuredToM/data/gw_0125_hiyouga/asst/eval.parquet \
   --output_dir /weka/scratch/tshu2/szhan256/github/ShunchiZhang/StructuredToM/data/gw_0125_hiyouga/asst/asst_eval_8b_1755
 
-python -m mod.construction.eval_speedup_full \
+python -m mod.construction.eval.eval_gw_asst \
   --model no \
   --model_name 8b \
   --seed 10 \
@@ -48,7 +48,7 @@ python -m mod.construction.eval_speedup_full \
   --parquet_path /weka/scratch/tshu2/szhan256/github/ShunchiZhang/StructuredToM/data/gw_0125_hiyouga/asst/eval.parquet \
   --output_dir /weka/scratch/tshu2/szhan256/github/ShunchiZhang/StructuredToM/data/gw_0125_hiyouga/asst/asst_eval_8b_1755
 
-python -m mod.construction.eval_speedup_full \
+python -m mod.construction.eval.eval_gw_asst \
   --compute_speedup \
   --seed 10 \
   --parquet_path /weka/scratch/tshu2/szhan256/github/ShunchiZhang/StructuredToM/data/gw_0125_hiyouga/asst/eval.parquet \

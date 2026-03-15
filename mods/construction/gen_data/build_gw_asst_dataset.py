@@ -7,10 +7,10 @@ import numpy as np
 from datasets import Dataset
 from tqdm import tqdm
 
-from agent import HumanAgent
-from env import STAY, ConstructionEnv
-from qa_export import build_examples2, is_episode_suitable
-from recording import EnvSaver
+from ..agent import HumanAgent
+from ..env import STAY, ConstructionEnv
+from build_gw_data import build_examples2, is_episode_suitable
+from episode_recorder import EnvSaver
 
 
 def main():

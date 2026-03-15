@@ -11,9 +11,9 @@ from datasets import Dataset
 from PIL import Image, ImageDraw, ImageFont
 from tqdm import tqdm
 
-from .agent import HelperAgent, HumanAgent
-from .env import STAY, ConstructionEnv
-from .estimate_distribution import (
+from ..agent import HelperAgent, HumanAgent
+from ..env import STAY, ConstructionEnv
+from ..estimate_distribution import (
     _object_labels_from_config,
     _parse_distribution2,
     _resolve_object_index,
