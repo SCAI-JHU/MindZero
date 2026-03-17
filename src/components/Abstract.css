@@ -1,0 +1,23 @@
+.abstract-container {
+  margin: 1.5rem 0 2rem;
+  padding: 0 2rem;
+}
+
+.abstract-title {
+  font-size: 1.2rem;
+  text-align: center;
+  border-bottom: none;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0;
+}
+
+.abstract-body {
+  font-style: italic;
+  color: #444;
+  text-align: justify;
+  line-height: 1.8;
+}
+
+.abstract-body p {
+  text-indent: 0;
+}

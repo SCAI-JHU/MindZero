@@ -1,0 +1,9 @@
+.ref-link {
+  color: #1a73e8;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ref-link:hover {
+  text-decoration: underline;
+}

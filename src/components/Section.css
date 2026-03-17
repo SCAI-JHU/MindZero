@@ -1,0 +1,41 @@
+.paper-section {
+  margin-bottom: 1.5rem;
+  counter-reset: subsection;
+}
+
+.paper-section h2 {
+  color: #222;
+}
+
+.paper-section > h2::before {
+  counter-increment: section;
+  content: counter(section) ". ";
+}
+
+.paper-subsection > h3::before {
+  counter-increment: subsection;
+  content: counter(section) "." counter(subsection) " ";
+}
+
+.paper-section-unnumbered > h2::before {
+  counter-increment: none;
+  content: none;
+}
+
+.heading-anchor {
+  opacity: 0;
+  margin-left: 0.4em;
+  color: #aaa;
+  text-decoration: none;
+  font-weight: 400;
+  transition: opacity 0.15s;
+}
+
+.paper-section h2:hover .heading-anchor,
+.paper-subsection h3:hover .heading-anchor {
+  opacity: 1;
+}
+
+.heading-anchor:hover {
+  color: #1a73e8;
+}

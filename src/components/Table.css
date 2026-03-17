@@ -1,0 +1,46 @@
+.table-container {
+  margin: 1.5rem auto;
+  overflow-x: auto;
+}
+
+.table-caption {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.three-line-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  border-top: 2px solid #333;
+  border-bottom: 2px solid #333;
+}
+
+.three-line-table thead tr {
+  border-bottom: 1px solid #333;
+}
+
+.three-line-table th {
+  padding: 0.6rem 1rem;
+  text-align: left;
+  font-weight: 600;
+}
+
+.three-line-table td {
+  padding: 0.5rem 1rem;
+  text-align: left;
+}
+
+.three-line-table tbody tr:hover {
+  background: #fafafa;
+}
+
+.table-caption .heading-anchor {
+  font-size: 0.85em;
+}
+
+.table-caption:hover .heading-anchor {
+  opacity: 1;
+}
