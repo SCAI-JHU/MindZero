@@ -26,7 +26,67 @@ Across mental reasoning and AI assistance tasks, MindZero enhances MLLMs' intrin
 
 ## 📝 Quick Start
 
-Coming soon :)
+### Data
+https://huggingface.co/datasets/SCAI-JHU/MindZero
+
+
+### Environment
+
+We use Apptainer, a safer Docker without root access, to control the environment. Alternatively, you can use Docker image [`hiyouga/verl:ngc-th2.8.0-cu12.9-vllm0.11.0`](https://hub.docker.com/layers/hiyouga/verl/ngc-th2.8.0-cu12.9-vllm0.11.0) if you have access to Docker.
+
+```sh
+mindzero_path="/path/to/MindZero"
+cd ${mindzero_path}
+apptainer build --fakeroot requirements/mindzero.sif requirements/mindzero.def
+apptainer shell \
+--nv \
+--cleanenv \
+--bind ${mindzero_path}:${mindzero_path} \
+--bind /home/$(whoami):/home/$(whoami) \
+--pwd ${mindzero_path} \
+--shell /usr/bin/bash \
+${mindzero_path}/requirements/easyr1.sif
+```
+
+### Training
+
+1. Serve reward model using vLLM
+   ```sh
+   # Gridworld
+   bash scripts/vllm_serve.sh hf:Qwen/Qwen3-VL-235B-A22B-Instruct-FP8 qwen3-235b-fp8-vl
+   # Household
+   bash scripts/vllm_serve.sh hf:Qwen/Qwen3-235B-A22B-Instruct-2507-FP8 qwen3-235b-fp8
+   ```
+
+2. Launch RL training using EasyR1 (a clean fork of veRL)
+   ```sh
+   export WANDB_API_KEY="wandb_v1_xxxxxxxx"
+
+   # Gridworld-QA
+   python scripts/train_config.py --domain gw --task tom --gpu_ids 0,1,2,3 --model_path Qwen/Qwen3-VL-4B-Instruct-2507
+   python scripts/train_config.py --domain gw --task tom --gpu_ids 0,1,2,3 --model_path Qwen/Qwen3-VL-8B-Instruct-2507
+
+   # Gridworld-Assistance
+   python scripts/train_config.py --domain gw --task asst --gpu_ids 0,1,2,3 --model_path Qwen/Qwen3-VL-4B-Instruct-2507
+   python scripts/train_config.py --domain gw --task asst --gpu_ids 0,1,2,3 --model_path Qwen/Qwen3-VL-8B-Instruct-2507
+
+   # Household-QA
+   python scripts/train_config.py --domain hh --task tom --gpu_ids 0,1,2,3 --model_path meta-llama/Llama-3.2-3B-Instruct
+   python scripts/train_config.py --domain hh --task tom --gpu_ids 0,1,2,3 --model_path meta-llama/Llama-3.1-8B-Instruct
+   python scripts/train_config.py --domain hh --task tom --gpu_ids 0,1,2,3 --model_path Qwen/Qwen3-4B-Instruct-2507
+
+   # Household-Assistance
+   python scripts/train_config.py --domain hh --task asst --gpu_ids 0,1,2,3 --model_path meta-llama/Llama-3.2-3B-Instruct
+   python scripts/train_config.py --domain hh --task asst --gpu_ids 0,1,2,3 --model_path meta-llama/Llama-3.1-8B-Instruct
+   python scripts/train_config.py --domain hh --task asst --gpu_ids 0,1,2,3 --model_path Qwen/Qwen3-4B-Instruct-2507
+   ```
+
+### Evaluation
+
+- QA: [`mods/test_and_save.py`](mods/test_and_save.py)
+- Assistance
+  - Gridworld: [`scripts/eval_gw_speedup.sh`](scripts/eval_gw_speedup.sh)
+  - Household: https://github.com/ShunchiZhang/online_watch_and_help/tree/MindZero
 
 ## 📖 Citation
 

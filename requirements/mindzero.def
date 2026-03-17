@@ -1,0 +1,5 @@
+Bootstrap: docker
+From: hiyouga/verl:ngc-th2.8.0-cu12.9-vllm0.11.0
+
+%post
+  python -m pip install --no-cache-dir nvitop json-repair litellm prettytable
