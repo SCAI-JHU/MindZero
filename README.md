@@ -18,5 +18,15 @@ During training, the model is rewarded for generating mental state hypotheses th
   <img src="assets/framework.png"  alt="Overview"  width="600">
 </p>
 
-> **Highlights:** Small models & SOTA performance · Zero mental state annotations · Online inference with robust uncertainty updates over multiple hypotheses · Efficient reasoning suitable for
-real-time assistance
+> **Highlights:** Small models & SOTA performance · Zero mental state annotations · Online inference with robust uncertainty updates over multiple hypotheses · Efficient reasoning suitable for real-time assistance
+
+
+## 📝 Quick Start
+
+Coming soon :)
+
+## 📖 Citation
+
+```
+Coming soon :)
+```
