@@ -1,18 +1,18 @@
 data:
-  train_files: "--"
-  val_files: "--"
+  train_files: data/gw_asst/train.parquet
+  val_files: data/gw_asst/test.parquet
   prompt_key: problem
   answer_key: answer
   image_key: images
   video_key: videos
   image_dir: null
   video_fps: 2.0
-  max_prompt_length: -1
-  max_response_length: -1
+  max_prompt_length: 768
+  max_response_length: 512
   rollout_batch_size: 32
   mini_rollout_batch_size: null
   val_batch_size: 2048
-  format_prompt: "--"
+  format_prompt: prompts/input/gw_asst.jinja
   override_chat_template: null
   shuffle: true
   seed: 1
@@ -69,6 +69,7 @@ worker:
     enable_chunked_prefill: true
     tensor_parallel_size: 1
     disable_tqdm: false
+    max_num_batched_tokens: 16384
     val_override_config:
       temperature: 0.8
       top_p: 0.95
@@ -83,23 +84,23 @@ worker:
       offload_params: false
 
   reward:
-    reward_function: "--"
+    reward_function: rewards/gw_asst.py:compute_score
 
 trainer:
-  total_epochs: -1
+  total_epochs: 8
   max_steps: null
-  project_name: "--"
+  project_name: gw_asst
   experiment_name: "--"
   logger: ["console", "file", "wandb"]
   nnodes: 1
   n_gpus_per_node: -1
   max_try_make_batch: 20
-  val_freq: -1
+  val_freq: 10
   val_before_train: true
   val_only: false
   val_generations_to_log: 4
-  save_freq: -1
-  save_limit: -1
+  save_freq: 150
+  save_limit: 5
   save_model_only: false
   save_checkpoint_path: null
   load_checkpoint_path: null

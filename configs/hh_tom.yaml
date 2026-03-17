@@ -1,18 +1,18 @@
 data:
-  train_files: "--"
-  val_files: "--"
+  train_files: data/hh_tom/train.parquet
+  val_files: data/hh_tom/test.parquet
   prompt_key: problem
   answer_key: answer
   image_key: images
   video_key: videos
   image_dir: null
   video_fps: 2.0
-  max_prompt_length: -1
-  max_response_length: -1
+  max_prompt_length: 768
+  max_response_length: 8192
   rollout_batch_size: 16
   mini_rollout_batch_size: null
   val_batch_size: 600
-  format_prompt: "--"
+  format_prompt: prompts/input/hh_tom.jinja
   override_chat_template: null
   shuffle: true
   seed: 1
@@ -69,7 +69,7 @@ worker:
     enable_chunked_prefill: true
     tensor_parallel_size: 1
     disable_tqdm: false
-    max_num_batched_tokens: -1
+    max_num_batched_tokens: 16384
     val_override_config:
       temperature: 0.8
       top_p: 0.95
@@ -84,23 +84,23 @@ worker:
       offload_params: false
 
   reward:
-    reward_function: "--"
+    reward_function: rewards/hh_tom.py:compute_score
 
 trainer:
-  total_epochs: -1
+  total_epochs: 20
   max_steps: null
-  project_name: "--"
+  project_name: hh_tom
   experiment_name: "--"
   logger: ["console", "file", "wandb"]
   nnodes: 1
   n_gpus_per_node: -1
   max_try_make_batch: 20
-  val_freq: -1
+  val_freq: 20
   val_before_train: true
   val_only: false
   val_generations_to_log: 3
-  save_freq: -1
-  save_limit: -1
+  save_freq: 20
+  save_limit: 1
   save_model_only: false
   save_checkpoint_path: null
   load_checkpoint_path: null
