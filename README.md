@@ -15,7 +15,7 @@
 
 During training, the model is rewarded for generating mental state hypotheses that maximize the likelihood of observed actions estimated by a planner, similar to model-based ToM reasoning. This method thus eliminates the need for explicit mental state annotations. After training, MindZero internalizes model-based reasoning into fast single-pass inference.
 
-Across challenging mental reasoning and AI assistance tasks, MindZero enhances MLLMs' intrinsic ToM ability and significantly outperforms model-based methods in both accuracy and efficiency.
+Across mental reasoning and AI assistance tasks, MindZero enhances MLLMs' intrinsic Theory of Mind (ToM) ability and significantly outperforms model-based methods in both accuracy and efficiency.
 
 <p align="center">
   <img src="assets/framework.png"  alt="Overview"  width="600">
