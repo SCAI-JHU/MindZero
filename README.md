@@ -2,6 +2,7 @@
   <h1 align="center">
     MindZero<!--
 --><sup>
+    <img src="assets/logo.png" alt="SCAI logo" width="23" height="40" align="absmiddle" />
     <sup>
   </h1>
 
