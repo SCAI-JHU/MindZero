@@ -32,12 +32,19 @@ https://huggingface.co/datasets/SCAI-JHU/MindZero
 
 ### Environment
 
-We use Apptainer, a safer Docker without root access, to control the environment. Alternatively, you can use Docker image [`hiyouga/verl:ngc-th2.8.0-cu12.9-vllm0.11.0`](https://hub.docker.com/layers/hiyouga/verl/ngc-th2.8.0-cu12.9-vllm0.11.0) if you have access to Docker.
+We use Apptainer (a safer Docker without root access) to manage the environment. 
+
+Alternatively, you can use the Docker image [`hiyouga/verl:ngc-th2.8.0-cu12.9-vllm0.11.0`](https://hub.docker.com/layers/hiyouga/verl/ngc-th2.8.0-cu12.9-vllm0.11.0) if you have Docker access.
 
 ```sh
+# Set your MindZero path
 mindzero_path="/path/to/MindZero"
 cd ${mindzero_path}
+
+# Build the container
 apptainer build --fakeroot requirements/mindzero.sif requirements/mindzero.def
+
+# Launch the container on a GPU-enabled node/environment
 apptainer shell \
 --nv \
 --cleanenv \
