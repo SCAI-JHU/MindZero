@@ -45,7 +45,7 @@ apptainer shell \
 --bind /home/$(whoami):/home/$(whoami) \
 --pwd ${mindzero_path} \
 --shell /usr/bin/bash \
-${mindzero_path}/requirements/easyr1.sif
+${mindzero_path}/requirements/mindzero.sif
 ```
 
 ### Training
