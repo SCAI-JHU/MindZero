@@ -12,10 +12,10 @@ from pprint import pprint
 import pandas as pd
 from mathruler.grader import extract_boxed_content
 
-from mod.bayesian_net import LikelihoodEstimator, Net, Node
-from mod.client_configs import ESTIMATOR_CONFIGS, PROPOSER_CONFIGS
-from mod.likelihood_estimator import print_token_stats
-from mod.test_and_save import TestDataset
+from mods.bayesian_net import LikelihoodEstimator, Net, Node
+from mods.client_configs import ESTIMATOR_CONFIGS, PROPOSER_CONFIGS
+from mods.likelihood_estimator import print_token_stats
+from mods.test_and_save import TestDataset
 
 
 # propose_config = PROPOSER_CONFIGS["qwen3-235b-fp8"]

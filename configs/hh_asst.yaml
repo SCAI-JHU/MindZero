@@ -1,6 +1,6 @@
 data:
-  train_files: data/hh_asst/train.parquet
-  val_files: data/hh_asst/test.parquet
+  train_files: ShunchiZhang/MindZero@hh_asst/train
+  val_files: ShunchiZhang/MindZero@hh_asst/test
   prompt_key: problem
   answer_key: answer
   image_key: images
@@ -84,7 +84,7 @@ worker:
       offload_params: false
 
   reward:
-    reward_function: rewards/hh_asst.py:compute_score
+    reward_function: rewards/hh_asst.py:compute_score_prr_v3
 
 trainer:
   total_epochs: 3

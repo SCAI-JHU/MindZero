@@ -2,9 +2,9 @@ from pathlib import Path
 
 import pandas as pd
 
-from mod.client_configs import PROPOSER_CONFIGS
-from mod.construction.estimate_likelihood import compute_score
-from mod.test_and_save import TestDataset
+from mods.client_configs import PROPOSER_CONFIGS
+from mods.construction.estimate_likelihood import compute_score
+from mods.test_and_save import TestDataset
 
 
 propose_config = PROPOSER_CONFIGS["qwen3-4b-vl-gw0125"]

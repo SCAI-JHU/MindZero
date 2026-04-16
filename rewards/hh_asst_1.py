@@ -10,10 +10,10 @@ import pandas as pd
 from json_repair import repair_json
 from tqdm.asyncio import tqdm
 
-import mod.autotom_prompts as prompts
-from mod.client_configs import ESTIMATOR_CONFIGS, PROPOSER_CONFIGS
-from mod.likelihood_estimator import LikelihoodEstimator, print_token_stats
-from mod.test_and_save import TestDataset
+import mods.autotom_prompts as prompts
+from mods.client_configs import ESTIMATOR_CONFIGS, PROPOSER_CONFIGS
+from mods.likelihood_estimator import LikelihoodEstimator, print_token_stats
+from mods.test_and_save import TestDataset
 
 
 # propose_config = PROPOSER_CONFIGS["qwen3-235b-fp8"]

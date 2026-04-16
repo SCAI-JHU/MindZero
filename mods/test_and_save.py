@@ -6,7 +6,7 @@ from typing import Iterable
 from openai import AsyncOpenAI
 from tqdm.asyncio import tqdm
 
-from verl.utils.dataset import RLHFDataset
+from libs.EasyR1.verl.utils.dataset import RLHFDataset
 
 
 class TestDataset(RLHFDataset):

@@ -64,7 +64,7 @@ if __name__ == "__main__":
     args = parse_args()
     set_env_vars(args)
     verl_args = get_verl_args(args)
-    cmd = f"python3 -m verl.trainer.main {verl_args}"
+    cmd = f"python3 -m libs.EasyR1.verl.trainer.main {verl_args}"
     pprint(cmd.split())
 
     os.system(cmd)

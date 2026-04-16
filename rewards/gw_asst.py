@@ -1,4 +1,4 @@
-from mod.construction.estimate_distribution import compute_score as _compute_score
+from mods.construction.estimate_distribution import compute_score as _compute_score
 
 
 def compute_score(reward_inputs, key="neg_kl_backward", entropy_bonus=0.0, distance=False):
