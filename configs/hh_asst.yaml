@@ -1,6 +1,6 @@
 data:
-  train_files: ShunchiZhang/MindZero@hh_asst/train
-  val_files: ShunchiZhang/MindZero@hh_asst/test
+  train_files: SCAI-JHU/MindZero@hh_asst@train
+  val_files: SCAI-JHU/MindZero@hh_asst@test
   prompt_key: problem
   answer_key: answer
   image_key: images

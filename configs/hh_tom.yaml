@@ -1,6 +1,6 @@
 data:
-  train_files: data/hh_tom/train.parquet
-  val_files: data/hh_tom/test.parquet
+  train_files: SCAI-JHU/MindZero@hh_tom@train
+  val_files: SCAI-JHU/MindZero@hh_tom@test
   prompt_key: problem
   answer_key: answer
   image_key: images

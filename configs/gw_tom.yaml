@@ -1,6 +1,6 @@
 data:
-  train_files: data/gw_tom/train.parquet
-  val_files: data/gw_tom/test.parquet
+  train_files: SCAI-JHU/MindZero@gw_tom@train
+  val_files: SCAI-JHU/MindZero@gw_tom@test
   prompt_key: problem
   answer_key: answer
   image_key: images
