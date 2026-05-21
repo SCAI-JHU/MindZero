@@ -1,4 +1,5 @@
 import asyncio
+import io
 import base64
 import json
 from typing import Iterable
@@ -56,7 +57,9 @@ class TestDataset(RLHFDataset):
         if self.image_key in example:
             images = example[self.image_key]
             assert len(images) == 1, "only support one image for now"
-            url = f"data:image/png;base64,{base64.b64encode(images[0]['bytes']).decode('utf-8')}"
+            buffered = io.BytesIO()
+            images[0].save(buffered, format="PNG")
+            url = f"data:image/png;base64,{base64.b64encode(buffered.getvalue()).decode('utf-8')}"
             messages[0]["content"][0] = dict(type="image_url", image_url=dict(url=url))
 
         return messages
