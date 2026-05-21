@@ -34,7 +34,7 @@ fi
 
 cmd="CUDA_VISIBLE_DEVICES=${gpu_ids} vllm serve \
   ${model_path} \
-  --allowed-local-media-path /weka/scratch/tshu2 \
+  --allowed-local-media-path / \
   --host 0.0.0.0 \
   --port ${port} \
   --trust-remote-code \

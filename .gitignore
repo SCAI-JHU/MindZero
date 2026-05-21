@@ -1,0 +1,4 @@
+/checkpoints
+/log
+__pycache__/
+*.whl
