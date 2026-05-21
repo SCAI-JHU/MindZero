@@ -11,6 +11,7 @@ from pprint import pprint
 
 import pandas as pd
 from mathruler.grader import extract_boxed_content
+from tqdm.asyncio import tqdm
 
 from mods.bayesian_net import LikelihoodEstimator, Net, Node
 from mods.client_configs import ESTIMATOR_CONFIGS, PROPOSER_CONFIGS
@@ -70,7 +71,7 @@ async def batch_joint_prob(reward_inputs):
         nets.append(net)
 
     # ^ async inference
-    # await tqdm.gather(*[net.infer() for net in nets if net is not None], desc="batch_joint_prob")
+    await tqdm.gather(*[net.infer() for net in nets if net is not None], desc="batch_joint_prob")
 
     # ^ accuracy
     accs = []
