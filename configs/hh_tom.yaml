@@ -9,7 +9,7 @@ data:
   video_fps: 2.0
   max_prompt_length: 768
   max_response_length: 8192
-  rollout_batch_size: 16
+  rollout_batch_size: 32
   mini_rollout_batch_size: null
   val_batch_size: 600
   format_prompt: prompts/input/hh_tom.jinja
@@ -26,14 +26,14 @@ algorithm:
   use_kl_loss: true
   kl_penalty: low_var_kl
   kl_coef: 1.0e-2
-  online_filtering: false  # dapo filter groups
+  online_filtering: false
   filter_key: overall
   filter_low: 0.01
   filter_high: 0.99
 
 worker:
   actor:
-    global_batch_size: 8
+    global_batch_size: 32
     micro_batch_size_per_device_for_update: 4
     micro_batch_size_per_device_for_experience: 4
     max_grad_norm: 1.0
@@ -105,3 +105,4 @@ trainer:
   save_checkpoint_path: null
   load_checkpoint_path: null
   find_last_checkpoint: true
+  val_metric_for_best: val/acc_reward
