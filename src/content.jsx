@@ -26,8 +26,7 @@ export const paperMeta = {
   links: [
     { label: 'Paper', icon: 'ai ai-arxiv', url: 'https://arxiv.org' },
     { label: 'Code', icon: 'fa-brands fa-github', url: 'https://github.com/SCAI-JHU/MindZero' },
-    { label: 'Data', icon: 'fa-brands fa-hugging-face', url: 'https://huggingface.co/datasets/SCAI-JHU/MindZero' },
-    { label: 'Models', icon: 'fa-brands fa-hugging-face', url: 'https://huggingface.co/SCAI-JHU' },
+    { label: 'Data & Models', icon: 'fa-brands fa-hugging-face', url: 'https://huggingface.co/collections/SCAI-JHU/mindzero' },
   ],
 }
 
