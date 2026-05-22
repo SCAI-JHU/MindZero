@@ -6,7 +6,7 @@
     <sup>
   </h1>
 
-  <p><b>Learning Online Mental Reasoning With Zero Annotations</b></p>
+  <p><b>[ICML 2026] MindZero: Learning Online Mental Reasoning With Zero Annotations</b></p>
 
   [![Project Page](https://img.shields.io/badge/Homepage-Visit-blue?labelColor=gray&logo=homeassistantcommunitystore&logoColor=367BAF&style=flat-square)](https://scai.cs.jhu.edu/MindZero/)
   [![Hugging Face Dataset](https://img.shields.io/badge/HuggingFace-Dataset%20&%20Models-yellow?labelColor=gray&logo=huggingface&style=flat-square)](https://huggingface.co/collections/SCAI-JHU/mindzero/)
@@ -31,77 +31,38 @@ Across mental reasoning and AI assistance tasks, MindZero enhances MLLMs' intrin
 
 ## 📝 Quick Start
 
-### Code
+### Code & Data & Models
 
 ```sh
-git clone https://github.com/SCAI-JHU/MindZero /path/to/MindZero
-cd /path/to/MindZero
+# Clone & initialize repository
+export mindzero_path="/path/to/MindZero"
+git clone https://github.com/SCAI-JHU/MindZero ${mindzero_path}
+cd ${mindzero_path}
 git submodule update --init --recursive
+
+# Download HuggingFace dataset and models
+bash requirements/hf_download.sh
 ```
 
 ### Environment
 
-We use Apptainer (a safer Docker without root access) to manage the environment.
+We provide 3 equivalent ways to set up the environment. Choose the one that suits you best:
 
-Alternatively, you can use the Docker image [`hiyouga/verl:ngc-th2.8.0-cu12.9-vllm0.11.0`](https://hub.docker.com/layers/hiyouga/verl/ngc-th2.8.0-cu12.9-vllm0.11.0) if you have Docker access.
+1. Manually install Python packages by running [`requirements/setup_env.sh`](requirements/setup_env.sh)
+2. Use Docker image [`hiyouga/verl:ngc-th2.8.0-cu12.9-vllm0.11.0`](https://hub.docker.com/layers/hiyouga/verl/ngc-th2.8.0-cu12.9-vllm0.11.0)
+3. Use Apptainer (a safer Docker without root access):
+   ```sh
+   apptainer build --fakeroot requirements/mindzero.sif requirements/mindzero.def
+   apptainer shell \
+     --nv \
+     --cleanenv \
+     --bind ${mindzero_path}:${mindzero_path} \
+     --bind /home/$(whoami):/home/$(whoami) \
+     --pwd ${mindzero_path} \
+     --shell /usr/bin/bash \
+     ${mindzero_path}/requirements/mindzero.sif
+   ```
 
-```sh
-# Set your MindZero path
-mindzero_path="/path/to/MindZero"
-cd ${mindzero_path}
-
-# Build the container
-apptainer build --fakeroot requirements/mindzero.sif requirements/mindzero.def
-
-# Launch the container on a GPU-enabled node/environment
-apptainer shell \
---nv \
---cleanenv \
---bind ${mindzero_path}:${mindzero_path} \
---bind /home/$(whoami):/home/$(whoami) \
---pwd ${mindzero_path} \
---shell /usr/bin/bash \
-${mindzero_path}/requirements/mindzero.sif
-```
-
-### Dataset & Models
-
-- Dataset
-  ```sh
-  hf download --repo-type dataset SCAI-JHU/MindZero
-  ```
-
-- Pretrained models
-  ```sh
-  # Reward model
-  hf download Qwen/Qwen3-VL-235B-A22B-Instruct-2507-FP8  # Gridworld
-  hf download Qwen/Qwen3-235B-A22B-Instruct-2507-FP8     # Household
-
-  # Base model
-  hf download Qwen/Qwen3-VL-4B-Instruct                  # Gridworld
-  hf download Qwen/Qwen3-VL-8B-Instruct                  # Gridworld
-  hf download Qwen/Qwen3-4B-Instruct-2507                # Household
-  hf download meta-llama/Llama-3.2-3B-Instruct           # Household
-  hf download meta-llama/Llama-3.1-8B-Instruct           # Household
-  ```
-
-- MindZero checkpoints
-  ```sh
-  # Gridworld ToM
-  hf download SCAI-JHU/MindZero-gw-tom-Qwen3-VL-4B-Instruct
-  hf download SCAI-JHU/MindZero-gw-tom-Qwen3-VL-8B-Instruct
-  # Gridworld Assistance
-  hf download SCAI-JHU/MindZero-gw-asst-Qwen3-VL-4B-Instruct
-  hf download SCAI-JHU/MindZero-gw-asst-Qwen3-VL-8B-Instruct
-  # Household ToM
-  hf download SCAI-JHU/MindZero-hh-tom-Qwen3-4B-Instruct-2507
-  hf download SCAI-JHU/MindZero-hh-tom-Llama-3.2-3B-Instruct
-  hf download SCAI-JHU/MindZero-hh-tom-Llama-3.1-8B-Instruct
-  # Household Assistance
-  hf download SCAI-JHU/MindZero-hh-asst-Qwen3-4B-Instruct-2507
-  hf download SCAI-JHU/MindZero-hh-asst-Llama-3.2-3B-Instruct
-  hf download SCAI-JHU/MindZero-hh-asst-Llama-3.1-8B-Instruct
-  ```
 ### Training
 
 1. Serve the reward model with vLLM (Minimum requirement: 4xA100 80GB).
@@ -118,26 +79,27 @@ ${mindzero_path}/requirements/mindzero.sif
    export WANDB_API_KEY="wandb_v1_xxxxxxxx"
 
    # Gridworld-QA
-   python scripts/train_config.py --domain gw --task tom --gpu 4,5,6,7 --model Qwen/Qwen3-VL-4B-Instruct
-   python scripts/train_config.py --domain gw --task tom --gpu 4,5,6,7 --model Qwen/Qwen3-VL-8B-Instruct
+   python3 scripts/train_config.py --domain gw --task tom --gpu 4,5,6,7 --model Qwen/Qwen3-VL-4B-Instruct
+   python3 scripts/train_config.py --domain gw --task tom --gpu 4,5,6,7 --model Qwen/Qwen3-VL-8B-Instruct
 
    # Gridworld-Assistance
-   python scripts/train_config.py --domain gw --task asst --gpu 4,5,6,7 --model Qwen/Qwen3-VL-4B-Instruct
-   python scripts/train_config.py --domain gw --task asst --gpu 4,5,6,7 --model Qwen/Qwen3-VL-8B-Instruct
+   python3 scripts/train_config.py --domain gw --task asst --gpu 4,5,6,7 --model Qwen/Qwen3-VL-4B-Instruct
+   python3 scripts/train_config.py --domain gw --task asst --gpu 4,5,6,7 --model Qwen/Qwen3-VL-8B-Instruct
+
    # Household-QA
-   python scripts/train_config.py --domain hh --task tom --gpu 4,5,6,7 --model Qwen/Qwen3-4B-Instruct-2507
-   python scripts/train_config.py --domain hh --task tom --gpu 4,5,6,7 --model meta-llama/Llama-3.2-3B-Instruct
-   python scripts/train_config.py --domain hh --task tom --gpu 4,5,6,7 --model meta-llama/Llama-3.1-8B-Instruct
+   python3 scripts/train_config.py --domain hh --task tom --gpu 4,5,6,7 --model Qwen/Qwen3-4B-Instruct-2507
+   python3 scripts/train_config.py --domain hh --task tom --gpu 4,5,6,7 --model meta-llama/Llama-3.2-3B-Instruct
+   python3 scripts/train_config.py --domain hh --task tom --gpu 4,5,6,7 --model meta-llama/Llama-3.1-8B-Instruct
 
    # Household-Assistance
-   python scripts/train_config.py --domain hh --task asst --gpu 4,5,6,7 --model Qwen/Qwen3-4B-Instruct-2507
-   python scripts/train_config.py --domain hh --task asst --gpu 4,5,6,7 --model meta-llama/Llama-3.2-3B-Instruct
-   python scripts/train_config.py --domain hh --task asst --gpu 4,5,6,7 --model meta-llama/Llama-3.1-8B-Instruct
+   python3 scripts/train_config.py --domain hh --task asst --gpu 4,5,6,7 --model Qwen/Qwen3-4B-Instruct-2507
+   python3 scripts/train_config.py --domain hh --task asst --gpu 4,5,6,7 --model meta-llama/Llama-3.2-3B-Instruct
+   python3 scripts/train_config.py --domain hh --task asst --gpu 4,5,6,7 --model meta-llama/Llama-3.1-8B-Instruct
    ```
 
 ### Evaluation
 
-- QA: [`mods/test_and_save.py`](mods/test_and_save.py)
+- ToM Reasoning QA: [`mods/test_and_save.py`](mods/test_and_save.py)
 - Assistance
   - Gridworld: [`scripts/eval_gw_speedup.sh`](scripts/eval_gw_speedup.sh)
   - Household: https://github.com/ShunchiZhang/online_watch_and_help/tree/MindZero

@@ -2,6 +2,7 @@ model_path=${1:-"hf:Qwen/Qwen3-235B-A22B-Instruct-2507-FP8"}
 served_name=${2:-"local-model"}
 gpu_ids=${3:-"0,1,2,3"}
 port=${4:-9991}
+max_num_seqs=${5:-64}
 n_gpus=$((1 + $(echo ${gpu_ids} | grep -o "," | wc -l)))
 
 if [[ ${model_path} == hf:* ]]; then
@@ -13,7 +14,7 @@ else
   # * convert finetuned model to huggingface format
   if [[ -z $(compgen -G ${model_path}/huggingface/*.safetensors) ]]; then
     echo "[1/2] Safetensors not found. Converting..."
-    python3 scripts/model_merger.py --local_dir $model_path
+    python3 libs/EasyR1/scripts/model_merger.py --local_dir $model_path
     echo "[1/2] Conversion complete."
   else
     echo "[1/2] Safetensors found."
@@ -41,7 +42,7 @@ cmd="CUDA_VISIBLE_DEVICES=${gpu_ids} vllm serve \
   --tensor-parallel-size ${n_gpus} \
   --gpu-memory-utilization 0.90 \
   --max-model-len 32768 \
-  --max-num-seqs 64 \
+  --max-num-seqs ${max_num_seqs} \
   --served-model-name ${served_name} \
   ${mm_args}"
 echo $cmd | tr -s ' '
