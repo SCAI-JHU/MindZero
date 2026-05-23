@@ -7,7 +7,7 @@ from mods.construction.estimate_likelihood import compute_score
 from mods.test_and_save import TestDataset
 
 
-propose_config = PROPOSER_CONFIGS["qwen3-4b-vl-gw0125"]
+propose_config = PROPOSER_CONFIGS["qwen3-8b-vl-final"]
 
 data_version = "gw_0125_hiyouga/tom"
 
@@ -24,7 +24,7 @@ if __name__ == "__main__":
     data_home = Path("../../ShunchiZhang/StructuredToM/data")
 
     # data_path = (data_home / data_version / "test.parquet").as_posix()
-    data_path = (data_home / data_version / "test_easy_fix.parquet").as_posix()
+    data_path = (data_home / data_version / "test_final.parquet").as_posix()
     propose_model = propose_config["gen_kwargs"]["model"]
 
     save_id = f"{propose_model}"
@@ -34,7 +34,7 @@ if __name__ == "__main__":
     dataset = TestDataset(
         data_path=data_path,
         # debug_len=3,
-        format_prompt="nonthink",
+        format_prompt="gw_tom",
         **propose_config,
     )
     dataset.inference()

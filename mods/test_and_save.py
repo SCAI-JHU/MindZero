@@ -31,7 +31,7 @@ class TestDataset(RLHFDataset):
             video_fps=None,
             max_prompt_length=None,
             truncation=None,
-            format_prompt=f"examples/format_prompt/{format_prompt}.jinja",
+            format_prompt=f"prompts/input/{format_prompt}.jinja",
             min_pixels=None,
             max_pixels=None,
             filter_overlong_prompts=False,

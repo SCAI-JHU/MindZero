@@ -5,8 +5,9 @@ OPENAI_BASE_URL = "https://api.openai.com/v1"
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 PROPOSER_GEN_KWARGS = dict(
-    temperature=0.0,
-    top_p=1e-5,
+    temperature=0.8,
+    top_p=0.95,
+    n=1,
 )
 
 ESTIMATOR_GEN_KWARGS = dict(
@@ -53,6 +54,8 @@ def register():
         ("http://n04:9991/v1", "qwen3-4b-vl"),
         ("http://h15:9991/v1", "qwen3-235b-fp8"),
         ("http://n--:9991/v1", "qwen3-235b-fp8-vl"),
+        ("http://n13:9991/v1", "qwen3-4b-vl-final"),
+        ("http://n13:9991/v1", "qwen3-8b-vl-final"),
         # * finetuned models
         ("http://n--:9991/v1", "qwen3-4b-ft"),
         ("http://n10:9991/v1", "qwen3-4b-vl-gw0125"),

@@ -1,4 +1,5 @@
 /checkpoints
+/inference
 /log
 __pycache__/
 *.whl
