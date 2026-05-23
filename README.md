@@ -68,7 +68,7 @@ We provide 3 equivalent ways to set up the environment. Choose the one that suit
 1. Serve the reward model with vLLM (Minimum requirement: 4xA100 80GB).
    ```sh
    # Gridworld
-   bash scripts/vllm_serve.sh hf:Qwen/Qwen3-VL-235B-A22B-Instruct-2507-FP8 qwen3-235b-fp8-vl 0,1,2,3 9991
+   bash scripts/vllm_serve.sh hf:Qwen/Qwen3-VL-235B-A22B-Instruct-FP8 qwen3-235b-fp8-vl 0,1,2,3 9991
    # Household
    bash scripts/vllm_serve.sh hf:Qwen/Qwen3-235B-A22B-Instruct-2507-FP8 qwen3-235b-fp8 0,1,2,3 9991
    ```
@@ -110,7 +110,7 @@ We provide 3 equivalent ways to set up the environment. Choose the one that suit
 @inproceedings{zhang2026mindzero,
   title     = {MindZero: Learning Online Mental Reasoning With Zero Annotations},
   author    = {Shunchi Zhang and Jin Lu and Chuanyang Jin and Yichao Zhou and Zhining Zhang and Tianmin Shu},
-  booktitle = {Proceedings of the 43st International Conference on Machine Learning (ICML)},
+  booktitle = {Proceedings of the 43rd International Conference on Machine Learning (ICML)},
   year      = {2026}
 }
 ```
