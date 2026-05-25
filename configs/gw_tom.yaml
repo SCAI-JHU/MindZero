@@ -84,7 +84,7 @@ worker:
       offload_params: false
 
   reward:
-    reward_function: rewards/gw_tom.py:compute_score
+    reward_function: rewards/gw_tom.py:compute_score_sum
 
 trainer:
   total_epochs: 20

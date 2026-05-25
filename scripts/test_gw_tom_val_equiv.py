@@ -27,7 +27,7 @@ DEFAULT_LOCAL_DATA = (
     REPO_ROOT
     / "../../ShunchiZhang/StructuredToM/data"
     / "gw_0125_hiyouga/tom"
-    / "test.parquet"
+    / "test_final.parquet"
 ).resolve()
 
 
