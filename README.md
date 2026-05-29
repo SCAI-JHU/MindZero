@@ -1,22 +1,20 @@
 <div align="center">
-  <h1 align="center">
-    MindZero
-    <sup>
-      <img src="assets/logo.png" alt="SCAI logo" width="23" height="40" align="absmiddle" />
-    <sup>
-  </h1>
+  <h1><i>MindZero</i></h1>
 
-  <p><i>ICML 2026</i><br><b>MindZero: Learning Online Mental Reasoning With Zero Annotations</b></p>
+  **Learning Online Mental Reasoning With Zero Annotations**
 
-  [![Project Page](https://img.shields.io/badge/Homepage-Visit-blue?labelColor=gray&logo=homeassistantcommunitystore&logoColor=367BAF&style=flat-square)](https://scai.cs.jhu.edu/MindZero/)
-  [![Hugging Face Dataset](https://img.shields.io/badge/HuggingFace-Dataset%20&%20Models-yellow?labelColor=gray&logo=huggingface&style=flat-square)](https://huggingface.co/collections/SCAI-JHU/mindzero/)
-  [![Paper PDF](https://img.shields.io/badge/Paper-PDF-red?&labelColor=gray&logo=arxiv&logoColor=brown&style=flat-square)](https://arxiv.org)
+  *ICML 2026*
+
+  🌐 [Website](https://scai.cs.jhu.edu/MindZero/)
+  ·
+  📄 [Paper](https://arxiv.org)
+  ·
+  🤗 [Dataset & Models](https://huggingface.co/collections/SCAI-JHU/mindzero/)
 </div>
-
 
 ## 💡 TL;DR
 
-> ***MindZero*** is a self-supervised reinforcement learning framework that trains multimodal large language models (MLLMs) for efficient and robust online mental reasoning.
+***MindZero*** is a self-supervised reinforcement learning framework that trains multimodal large language models (MLLMs) for efficient and robust online mental reasoning.
 
 During training, the model is rewarded for generating mental state hypotheses that maximize the likelihood of observed actions estimated by a planner, similar to model-based ToM reasoning. This method thus eliminates the need for explicit mental state annotations. After training, *MindZero* internalizes model-based reasoning into fast single-pass inference.
 
@@ -28,7 +26,7 @@ Across mental reasoning and AI assistance tasks in gridworld and household domai
 
 ## 📝 Quick Start
 
-### Code & Data & Models
+### Code & Dataset & Models
 
 ```sh
 # Clone & initialize repository
@@ -94,14 +92,15 @@ We provide 3 equivalent ways to set up the environment. Choose the one that suit
 
 ### Evaluation
 
-- ToM Reasoning QA: [`mods/test_and_save.py`](mods/test_and_save.py)
-- Assistance
-  - Gridworld: [`scripts/eval_gw_speedup.sh`](scripts/eval_gw_speedup.sh)
-  - Household: https://github.com/ShunchiZhang/online_watch_and_help/tree/MindZero
+- QA: [`mods/test_and_save.py`](mods/test_and_save.py)
+- Gridworld Proactive Assistance: [`scripts/eval_gw_speedup.sh`](scripts/eval_gw_speedup.sh)
+- Household Proactive Assistance: https://github.com/ShunchiZhang/online_watch_and_help/tree/MindZero
 
 ## 📖 Citation
 
-```
+If you find this work useful, please consider starring the repository and citing our paper:
+
+```bibtex
 @inproceedings{zhang2026mindzero,
   title     = {MindZero: Learning Online Mental Reasoning With Zero Annotations},
   author    = {Shunchi Zhang and Jin Lu and Chuanyang Jin and Yichao Zhou and Zhining Zhang and Tianmin Shu},
