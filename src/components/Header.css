@@ -8,9 +8,17 @@
 .paper-title {
   font-size: 1.8rem;
   font-weight: 700;
-  margin-bottom: 1rem;
+  margin-bottom: 0.45rem;
   border-bottom: none;
   padding-bottom: 0;
+}
+
+.paper-venue {
+  margin-bottom: 0.8rem;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1a73e8;
 }
 
 .author-list {

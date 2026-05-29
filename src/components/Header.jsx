@@ -1,9 +1,11 @@
 import './Header.css'
 
-export default function Header({ title, authors, affiliations, links }) {
+export default function Header({ title, venue, authors, affiliations, links }) {
   return (
     <header className="paper-header">
       <h1 className="paper-title" style={{ whiteSpace: 'pre-line' }}>{title}</h1>
+
+      {venue && <p className="paper-venue">{venue}</p>}
 
       <div className="author-list">
         {authors.map((author, i) => (

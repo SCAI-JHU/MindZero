@@ -3,7 +3,8 @@ import { NumberingProvider } from './context/NumberingContext'
 import { TocProvider, useTocSections } from './context/TocContext'
 import Header from './components/Header'
 import Sidebar from './components/Sidebar'
-import Content, { paperMeta } from './content'
+import Content from './content'
+import { paperMeta } from './paperMeta'
 
 function numberSections(sections) {
   let sectionNum = 0
@@ -40,6 +41,7 @@ function AppContent() {
       <main className="main-content">
         <Header
           title={paperMeta.title}
+          venue={paperMeta.venue}
           authors={paperMeta.authors}
           affiliations={paperMeta.affiliations}
           links={paperMeta.links}
@@ -49,7 +51,7 @@ function AppContent() {
 
         <footer className="footer">
           <p>
-            Template: <a href="https://github.com/ShunchiZhang/site-template" target="_blank" rel="noopener noreferrer"><i className="fa-brands fa-github" /> ShunchiZhang/site-template</a>
+            MindZero · <a href="https://scai.cs.jhu.edu/" target="_blank" rel="noopener noreferrer">SCAI Lab</a> · Johns Hopkins University
           </p>
         </footer>
       </main>
