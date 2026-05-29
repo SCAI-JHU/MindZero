@@ -1,6 +1,8 @@
-/checkpoints
 /inference
-/log
+/analysis
+/.claude
 /wandb
+/checkpoints*
+/log*
 __pycache__/
 *.whl

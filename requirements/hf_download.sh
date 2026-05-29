@@ -4,7 +4,6 @@ hf download --repo-type dataset SCAI-JHU/MindZero
 
 # ===== Pretrained models =====
 # Reward model
-hf download Qwen/Qwen3-VL-235B-A22B-Instruct-FP8       # Gridworld
 hf download Qwen/Qwen3-235B-A22B-Instruct-2507-FP8     # Household
 
 # Base model

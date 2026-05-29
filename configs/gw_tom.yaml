@@ -105,3 +105,4 @@ trainer:
   save_checkpoint_path: null
   load_checkpoint_path: null
   find_last_checkpoint: true
+  val_metric_for_best: val/accuracy_reward
