@@ -1,3 +1,4 @@
+import { useEffect, useId } from 'react'
 import Abstract from './components/Abstract'
 import Section from './components/Section'
 import SubSection from './components/SubSection'
@@ -5,6 +6,7 @@ import Figure from './components/Figure'
 import Table from './components/Table'
 import CodeBlock from './components/CodeBlock'
 import Math from './components/Math'
+import { useNumbering } from './context/NumberingContext'
 import citationCode from './assets/code/citation.bib?raw'
 import assistanceExampleImg from './assets/figures/assistance-example.svg'
 import methodSsrlImg from './assets/figures/method-ssrl.svg'
@@ -49,9 +51,18 @@ function ContributionGrid() {
   )
 }
 
-function FigureRow({ panels, caption }) {
+function FigureRow({ panels, caption, label }) {
+  const { registerFigure, registerLabel } = useNumbering()
+  const autoId = useId()
+  const key = label || autoId
+  const num = registerFigure(key)
+
+  useEffect(() => {
+    if (label) registerLabel(label, 'figure', num)
+  }, [label, num, registerLabel])
+
   return (
-    <figure className="figure-container figure-row">
+    <figure className="figure-container figure-row" id={label || undefined}>
       <div className="figure-row-panels">
         {panels.map((panel) => (
           <div className="figure-row-panel" key={panel.title}>
@@ -60,7 +71,12 @@ function FigureRow({ panels, caption }) {
           </div>
         ))}
       </div>
-      <figcaption className="figure-caption">{caption}</figcaption>
+      <figcaption className="figure-caption">
+        {label && (
+          <a href={`#${label}`} className="heading-anchor" aria-label="Link to figure">#&nbsp;</a>
+        )}
+        <strong>Figure {num}.</strong> {caption}
+      </figcaption>
     </figure>
   )
 }
@@ -110,6 +126,7 @@ export default function Content() {
             MindZero frames mental reasoning as self-supervised reinforcement learning centered on explanatory consistency. Instead of predicting the next action directly, the model generates mental-state hypotheses that should explain the actions already observed.
           </p>
           <FigureRow
+            label="fig:method"
             panels={[
               { title: 'Self-Supervised RL', src: methodSsrlImg },
               { title: 'Reward Computation', src: methodRewardImg },
@@ -155,6 +172,7 @@ P(m_t)
             In both domains, MindZero improves small open-weight backbones while keeping inference cost close to single-pass model use. It reaches 95.0% and 92.3% accuracy in GridWorld QA with Qwen3-VL-4B and Qwen3-VL-8B, and up to 77.8% in household QA.
           </p>
           <FigureRow
+            label="fig:qa"
             panels={[
               { title: 'GridWorld Question Answering', src: gwQaImg },
               { title: 'Household Question Answering', src: householdQaImg },
@@ -211,6 +229,7 @@ P(m_t)
             MindZero's predictions become more accurate as task progress reveals more evidence, while most baselines stay low or improve too late to support useful assistance.
           </p>
           <FigureRow
+            label="fig:dynamics"
             panels={[
               { title: 'GridWorld Proactive Assistance', src: progressGwImg },
               { title: 'Household Proactive Assistance', src: progressHouseholdImg },
