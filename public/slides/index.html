@@ -305,10 +305,12 @@
       });
     }
 
+    const isPrintPdf = /print-pdf/gi.test(window.location.search);
+
     Reveal.initialize({
       width: 1280,
       height: 720,
-      margin: 0,
+      margin: isPrintPdf ? 0.10 : 0,
       hash: true,
       controls: false,
       progress: false,
