@@ -40,18 +40,22 @@ export default function Header({ title, venue, authors, affiliations, links }) {
       </div>
 
       {links && links.length > 0 && (
-        <div className="paper-links">
-          {links.map((link, i) => (
-            <a
-              key={i}
-              href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="paper-link"
-            >
-              {link.icon && <i className={link.icon}></i>}
-              <span>{link.label}</span>
-            </a>
+        <div className="paper-link-groups">
+          {links.map((group, gi) => (
+            <div className="paper-links" key={gi}>
+              {group.map((link, i) => (
+                <a
+                  key={i}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="paper-link"
+                >
+                  {link.icon && <i className={link.icon}></i>}
+                  <span>{link.label}</span>
+                </a>
+              ))}
+            </div>
           ))}
         </div>
       )}

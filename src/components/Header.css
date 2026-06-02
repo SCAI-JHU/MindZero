@@ -53,6 +53,12 @@
   white-space: nowrap;
 }
 
+.paper-link-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
 .paper-links {
   display: flex;
   justify-content: center;

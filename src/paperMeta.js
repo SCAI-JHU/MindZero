@@ -13,10 +13,16 @@ export const paperMeta = {
     'Johns Hopkins University',
     'Peking University',
   ],
+  // Each inner array is one row: first row = core artifacts, second row = outreach.
   links: [
-    { label: 'Paper', icon: 'fa-solid fa-file', url: 'https://arxiv.org/pdf/2606.00240' },
-    { label: 'Code', icon: 'fa-brands fa-github', url: 'https://github.com/SCAI-JHU/MindZero' },
-    { label: 'Data & Models', icon: 'fa-solid fa-database', url: 'https://huggingface.co/collections/SCAI-JHU/mindzero' },
-    { label: 'Slides', icon: 'fa-solid fa-chalkboard', url: './slides/' },
+    [
+      { label: 'Paper', icon: 'fa-solid fa-file', url: 'https://arxiv.org/pdf/2606.00240' },
+      { label: 'Code', icon: 'fa-brands fa-github', url: 'https://github.com/SCAI-JHU/MindZero' },
+      { label: 'Data & Models', icon: 'fa-solid fa-database', url: 'https://huggingface.co/collections/SCAI-JHU/mindzero' },
+    ],
+    [
+      { label: 'Slides', icon: 'fa-solid fa-chalkboard', url: './slides/' },
+      { label: 'Talk', icon: 'fa-solid fa-video', url: 'https://recorder-v3.slideslive.com/?share=112361&s=9f8eaaf6-e910-44f2-98fb-2d1852389bfb' },
+    ],
   ],
 }
