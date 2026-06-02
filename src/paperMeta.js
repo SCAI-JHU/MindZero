@@ -14,8 +14,9 @@ export const paperMeta = {
     'Peking University',
   ],
   links: [
-    { label: 'Paper', icon: 'fa-solid fa-file-pdf', url: 'https://arxiv.org' },
+    { label: 'Paper', icon: 'fa-solid fa-file', url: 'https://arxiv.org/pdf/2606.00240' },
     { label: 'Code', icon: 'fa-brands fa-github', url: 'https://github.com/SCAI-JHU/MindZero' },
     { label: 'Data & Models', icon: 'fa-solid fa-database', url: 'https://huggingface.co/collections/SCAI-JHU/mindzero' },
+    { label: 'Slides', icon: 'fa-solid fa-chalkboard', url: './slides/' },
   ],
 }

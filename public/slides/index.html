@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindZero: Learning Online Mental Reasoning With Zero Annotations</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="reveal">
+    <div class="slides">
+      <section class="slide title-slide" data-section="MindZero">
+        <div class="title-grid">
+          <p class="kicker title-kicker">ICML 2026</p>
+          <h1>MindZero</h1>
+          <p class="subtitle-block">Learning Online Mental Reasoning With <span class="nowrap">Zero Annotations</span>
+          </p>
+          <div class="title-meta">
+            <p class="authors">
+              Shunchi Zhang<sup>1*</sup>, Jin Lu<sup>1*</sup>, Chuanyang Jin<sup>1*</sup>,
+              Yichao Zhou<sup>2*</sup>, <span class="nowrap">Zhining Zhang<sup>2</sup>, Tianmin Shu<sup>1</sup></span>
+            </p>
+            <p><sup>1</sup> Johns Hopkins University &nbsp;&nbsp; <sup>2</sup> Peking University &nbsp;&nbsp;
+              <sup>*</sup> Equal contribution
+            </p>
+          </div>
+          <div class="project-link title-qr">
+            <div class="qr-code" data-url="https://scai.cs.jhu.edu/MindZero"></div>
+            <div>
+              <p class="project-label">Project Page</p>
+              <p class="project-note">Code and models are open source</p>
+              <p class="project-url">https://scai.cs.jhu.edu/MindZero</p>
+            </div>
+          </div>
+        </div>
+        <aside class="notes">
+          Today I will present MindZero: Learning Online Mental Reasoning With Zero Annotations. We study the problem
+          called online mental reasoning, that is, how an AI assistant can infer a person's goal or belief while the
+          interaction is unfolding, and then use that estimate for assistance.
+        </aside>
+      </section>
+
+      <section class="slide split-slide" data-section="Problem">
+        <header>
+          <p class="kicker">01 / Online Mental Reasoning</p>
+          <h2>Infer mental states from a partial behavior stream</h2>
+        </header>
+        <div class="split wide-visual">
+          <figure class="visual framed">
+            <img src="imgs/example.png" alt="Example of online mental reasoning" />
+          </figure>
+          <div class="side-note">
+            <p class="lead">At every time step, the assistant maintains mental-state hypotheses over latent human goals.
+            </p>
+            <ul class="clean-list">
+              <li><span>Uncertainty</span> robust uncertainty over multiple hypotheses</li>
+              <li><span>Efficiency</span> fast inference for real-time assistance</li>
+              <li><span>Zero annotations</span> learning with zero ground-truth annotations</li>
+            </ul>
+          </div>
+        </div>
+        <aside class="notes">
+          The figure shows an example from our real results. A human is acting in an environment, but the assistant does
+          not observe the human's goal or belief. At each time step, it sees only the state and action. The assistant
+          must maintain mental-state hypotheses over latent human goals and update them online. Early in a trajectory,
+          several goals may explain the same behavior. Later, the distribution should become sharper.
+
+          This creates the three challenges: robust uncertainty over multiple hypotheses, fast inference for real-time
+          assistance, and learning with zero ground-truth annotations.
+        </aside>
+      </section>
+
+      <section class="slide formula-slide" data-section="Background">
+        <header>
+          <p class="kicker">02 / Bayesian Theory of Mind</p>
+          <h2>A standard target, but expensive to <span class="nowrap">run online</span></h2>
+        </header>
+        <div class="formula-body">
+          <div class="equation">
+            <span>P(m<sub>t</sub> | s<sub>1:t</sub>, a<sub>1:t</sub>)</span>
+            <span class="operator">&prop;</span>
+            <span>P(a<sub>1:t</sub> | m<sub>t</sub>, s<sub>1:t</sub>)</span>
+            <span class="operator">&middot;</span>
+            <span>P(m<sub>t</sub>)</span>
+          </div>
+          <div class="definition-list">
+            <p><span>Posterior</span> the mental-state distribution on the left side</p>
+            <p><span>Likelihood</span> how likely the observed actions are under this state</p>
+            <p><span>Prior</span> whether the mental state itself is plausible</p>
+          </div>
+          <p class="footline">Model-based ToM (e.g. AutoToM) estimates it through Bayesian networks, but each edge may
+            require an LLM call, which is slow and expensive.</p>
+        </div>
+        <aside class="notes">
+          A standard formulation is Bayesian Theory of Mind. In the equation, the left side is the posterior, or the
+          mental-state distribution. It is proportional to an action likelihood times a prior. The likelihood asks how
+          likely the observed actions are under this state. The prior asks whether the mental state itself is plausible.
+
+          This gives us a standard target, and model-based ToM methods such as AutoToM can estimate it through Bayesian
+          networks. But at every time step, each edge in the Bayesian network may require an LLM call, which makes
+          online inference slow and expensive.
+        </aside>
+      </section>
+
+      <section class="slide split-slide" data-section="Method">
+        <header>
+          <p class="kicker">03 / Self-Supervised Reinforcement Learning</p>
+          <h2>Amortize model-based ToM into <span class="nowrap">one forward pass</span></h2>
+        </header>
+        <div class="split narrow-visual">
+          <figure class="visual">
+            <img src="imgs/ssrl.png" alt="Self-supervised reinforcement learning pipeline" />
+          </figure>
+          <div class="side-note">
+            <p class="lead">Model-based reasoning can be used as the training signal for amortization.</p>
+            <ul class="clean-list">
+              <li><span>Proposal</span> A full particle set of candidate mental states</li>
+              <li><span>Scoring</span> A planner or frozen LLM scorer checks action likelihood</li>
+              <li><span>Optimization</span> Reinforcement learning for non-differentiable scoring</li>
+            </ul>
+            <p class="lead">At test time, the model can produce hypotheses in a single pass.</p>
+          </div>
+        </div>
+        <aside class="notes">
+          However, model-based reasoning provides us a strong scoring function, which can be used as the training signal
+          to amortizes multimodal language models.
+
+          During training, the model proposes a full particle set of candidate mental states. A planner or frozen LLM
+          scorer checks their action likelihood. This provides a self-supervised signal, which means we don't need
+          mental state annotations at all.
+
+          Because this scoring is non-differentiable, we use reinforcement learning to train the model.
+
+          At test time, the model can produce hypotheses in a single pass.
+        </aside>
+      </section>
+
+      <section class="slide split-slide" data-section="Reward">
+        <header>
+          <p class="kicker">04 / Objective</p>
+          <h2>ELBO as the reward</h2>
+        </header>
+        <div class="split equal">
+          <figure class="visual">
+            <img src="imgs/reward.png" alt="ELBO reward decomposition" />
+          </figure>
+          <div class="side-note">
+            <p class="lead">ELBO encourages hypotheses that explain actions and keep uncertainty.</p>
+            <ul class="clean-list">
+              <li><span>Likelihood</span> high action likelihood</li>
+              <li><span>Prior</span> prior plausibility</li>
+              <li><span>Entropy</span> discourages early collapse</li>
+            </ul>
+          </div>
+        </div>
+        <aside class="notes">
+          Here is the reward in more detail. It uses ELBO as the reward to encourage hypotheses that explain actions and
+          keep uncertainty when needed. Specifically, one part rewards high action likelihood, another captures prior
+          plausibility, and the entropy term discourages early collapse when evidence is still ambiguous.
+        </aside>
+      </section>
+
+      <section class="slide figure-slide" data-section="Evaluation">
+        <header>
+          <p class="kicker">05 / Setup</p>
+          <h2>Domains and tasks for evaluation</h2>
+        </header>
+        <figure class="visual full">
+          <img src="imgs/envs.png" alt="GridWorld and household evaluation domains" />
+        </figure>
+        <div class="setup-grid">
+          <div>
+            <p class="setup-heading">Domains</p>
+            <ul>
+              <li>GridWorld: visual map input</li>
+              <li>Household: text-converted scenarios</li>
+            </ul>
+          </div>
+          <div>
+            <p class="setup-heading">Tasks</p>
+            <ul>
+              <li>Story-based Theory-of-Mind question answering</li>
+              <li>Proactive assistance</li>
+            </ul>
+          </div>
+        </div>
+        <aside class="notes">
+          Moving to evaluation, we use two domains shown here. In GridWorld, the model receives a visual map input and
+          reasons multimodally. In Household, we follow prior work and convert multimodal task descriptions into text.
+
+          In both domains, we evaluate both story-based Theory-of-Mind question answering and proactive assistance.
+          Question answering checks inference at one point, while proactive assistance is harder, because the agent must
+          update multiple hypotheses throughout the trajectory.
+        </aside>
+      </section>
+
+      <section class="slide result-slide" data-section="Results">
+        <header>
+          <p class="kicker">06 / Question Answering</p>
+          <h2>MindZero improves story-based <span class="nowrap">QA accuracy</span></h2>
+        </header>
+        <figure class="visual full chart">
+          <img src="imgs/qa.png" alt="Question answering results" />
+        </figure>
+        <p class="statement">MindZero improves significantly over the pretrained checkpoint and is competitive with
+          strong commercial models using much less computation.</p>
+        <aside class="notes">
+          First, on question answering, pretrained models alone are even below chance. After MindZero training,
+          performance improves significantly over the pretrained checkpoint and is competitive with strong
+          commercial-model baselines, while using much less computation.
+        </aside>
+      </section>
+
+      <section class="slide result-slide" data-section="Results">
+        <header>
+          <p class="kicker">07 / Proactive Assistance</p>
+          <h2>Proactive assistance tests <span class="nowrap">online inference</span></h2>
+        </header>
+        <figure class="visual full chart">
+          <img src="imgs/asst.png" alt="Proactive assistance results" />
+        </figure>
+        <p class="statement">MindZero obtains the best speedup efficiently collaborating with both simulated and real
+          humans.</p>
+        <aside class="notes">
+          Next, on proactive assistance, pretrained models perform poorly, while MindZero obtains the best speedup
+          efficiently among the tested baselines when collaborating with both simulated human agents and real
+          participants.
+        </aside>
+      </section>
+
+      <section class="slide evidence-slide" data-section="Analysis">
+        <header>
+          <p class="kicker">08 / Analysis</p>
+          <h2>Mode seeking does not become <span class="nowrap">mode collapse</span></h2>
+        </header>
+        <div class="evidence-grid">
+          <figure class="visual evidence-card evidence-card-wide">
+            <img src="imgs/progress.png" alt="Prediction quality over task progress" />
+            <figcaption>Prediction quality sharpens as more actions are observed.</figcaption>
+          </figure>
+          <figure class="visual evidence-card">
+            <img src="imgs/ablation.png" alt="Ablation study on diversity controls" />
+            <figcaption>Diversity depends on prior design, multiple hypotheses, and entropy bonus.</figcaption>
+          </figure>
+        </div>
+        <aside class="notes">
+          One concern is the diversity of the hypotheses. The ELBO uses a reverse-KL-style objective, which can be mode
+          seeking. But in online assistance, some reduction in diversity is expected. Early in the task, the model
+          should keep several hypotheses alive. Later, probability should concentrate on the likely goals.
+
+          The left figure shows this sharpening as task progress increases. The right table shows that diversity depends
+          on prior design that encourages diversity, structured output for multiple hypotheses, and the entropy bonus.
+          All three contribute to performance.
+        </aside>
+      </section>
+
+      <section class="slide closing-slide" data-section="Takeaway">
+        <header>
+          <p class="kicker">09 / Takeaways</p>
+          <h2>Mental reasoning can be learned with <span class="nowrap">self-supervision</span></h2>
+        </header>
+        <div class="takeaway-list">
+          <p><span>Problem</span> Online mental reasoning with uncertainty, efficiency, and zero annotations</p>
+          <p><span>Method</span> Online mental reasoning can be learned with self-supervision using RL</p>
+          <p><span>Result</span> Efficient single-pass inference at test time and strong results across domains and
+            tasks</p>
+        </div>
+        <div class="project-link closing-qr">
+          <div class="qr-code" data-url="https://scai.cs.jhu.edu/MindZero"></div>
+          <div>
+            <p class="project-label">Project Page</p>
+            <p class="project-note">Code and models are open source</p>
+            <p class="project-url">https://scai.cs.jhu.edu/MindZero</p>
+          </div>
+        </div>
+        <aside class="notes">
+          To summarize, MindZero addresses online mental reasoning under three constraints: uncertainty, efficiency, and
+          zero annotations. Our work proves that online mental reasoning can be learned with self-supervision using RL,
+          and the trained model can efficiently perform single-pass inference at test time, achieving strong results
+          across domains and tasks.
+
+          Our code and models are all open source. Please visit our project page for more details.
+        </aside>
+      </section>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/notes/notes.js"></script>
+  <script src="qrcode.min.js"></script>
+  <script>
+    if (window.QRCode) {
+      document.querySelectorAll(".qr-code").forEach((node) => {
+        new QRCode(node, {
+          text: node.dataset.url,
+          width: 118,
+          height: 118,
+          colorDark: "#151515",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      });
+    }
+
+    Reveal.initialize({
+      width: 1280,
+      height: 720,
+      margin: 0,
+      hash: true,
+      controls: false,
+      progress: false,
+      slideNumber: false,
+      transition: "none",
+      backgroundTransition: "none",
+      plugins: [RevealNotes]
+    });
+  </script>
+</body>
+
+</html>
