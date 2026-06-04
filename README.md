@@ -7,9 +7,13 @@
 
   🌐 [Website](https://scai.cs.jhu.edu/MindZero/)
   ·
-  📄 [Paper](https://arxiv.org)
+  📄 [Paper](https://arxiv.org/pdf/2606.00240)
   ·
   🤗 [Dataset & Models](https://huggingface.co/collections/SCAI-JHU/mindzero/)
+  
+  🎙️ [Talk](https://recorder-v3.slideslive.com/?share=112361&s=9f8eaaf6-e910-44f2-98fb-2d1852389bfb)
+  ·
+  🖥️ [Slides](https://scai.cs.jhu.edu/MindZero/slides)
 </div>
 
 ## 💡 TL;DR
